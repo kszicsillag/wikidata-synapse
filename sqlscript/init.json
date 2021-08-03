@@ -1,0 +1,17 @@
+{
+	"name": "init",
+	"properties": {
+		"content": {
+			"query": "-- Optional: Create MASTER KEY if not exists in database:\n-- CREATE MASTER KEY ENCRYPTION BY PASSWORD = '<Very Strong Password>'\n\nCREATE DATABASE SCOPED CREDENTIAL SynapseIdentity\nWITH IDENTITY = 'Managed Identity';\n\nCREATE EXTERNAL DATA SOURCE wd\nWITH (    LOCATION   = 'https://wikidatastore2021.blob.core.windows.net/wikidataimport',\n          CREDENTIAL = SynapseIdentity\n)",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"poolName": "Built-in",
+				"databaseName": "wikidata"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
