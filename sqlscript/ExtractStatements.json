@@ -1,0 +1,17 @@
+{
+	"name": "ExtractStatements",
+	"properties": {
+		"content": {
+			"query": "select top 10 *\nfrom openrowset(\n        bulk 'latest-all.json',\n        data_source = 'wd',\n        format = 'csv',\n        fieldterminator ='0x0b',\n        fieldquote = '0x0b'\n    ) with (doc nvarchar(max)) as rows",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"poolName": "Built-in",
+				"databaseName": "wikidata"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
