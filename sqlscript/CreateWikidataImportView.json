@@ -1,0 +1,17 @@
+{
+	"name": "CreateWikidataImportView",
+	"properties": {
+		"content": {
+			"query": "CREATE VIEW WikidataRawView\nAS\nselect\n  *\nfrom openrowset(\n        bulk 'latest-all.json',\n        data_source = 'wd',\n        format = 'csv',\n        fieldterminator ='0x0b',\n        fieldquote = '0x0b'\n    ) with (doc nvarchar(max)) as rows\n     cross apply openjson((CASE WHEN doc='[' OR doc=']' THEN NULL ELSE doc END))\n        with(\n                \"id\" varchar(100)\n                ,\"type\" varchar(50)\n                ,\"datatype\" varchar(100)\n                ,\"labels\" nvarchar(max) AS JSON\n                ,\"descriptions\" nvarchar(max) AS JSON\n                ,\"aliases\" nvarchar(max) AS JSON\n                ,\"claims\" nvarchar(max) AS JSON\n                ,\"sitelinks\" nvarchar(max) AS JSON\n                ,\"lastrevid\" decimal(28,0)\n        ) ",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"poolName": "Built-in",
+				"databaseName": "wikidata"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
