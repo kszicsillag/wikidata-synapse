@@ -98,7 +98,7 @@
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
 				"content": {
-					"query": "select top 10 *\nfrom openrowset(\n        bulk 'latest-all.json',\n        data_source = 'wd',\n        format = 'csv',\n        fieldterminator ='0x0b',\n        fieldquote = '0x0b'\n    ) with (doc nvarchar(max)) as rows\n     cross apply openjson((CASE WHEN doc='[' OR doc=']' THEN NULL ELSE doc END))\n        with(\"id\" varchar(100), \"type\" varchar(50))\nwhere \"type\"='item'",
+					"query": "select top 10 *\nfrom openrowset(\n        bulk 'latest-all.json',\n        data_source = 'wd',\n        format = 'csv',\n        fieldterminator ='0x0b',\n        fieldquote = '0x0b'\n    ) with (doc nvarchar(max)) as rows\n     cross apply openjson((CASE WHEN doc='[' OR doc=']' THEN NULL ELSE doc END))\n        with(\n                \"id\" varchar(100)\n                ,\"type\" varchar(50)\n                ,\"datatype\" varchar(100)\n                ,\"labels\" nvarchar(max) AS JSON\n                ,\"descriptions\" nvarchar(max) AS JSON\n                ,\"aliases\" nvarchar(max) AS JSON\n                ,\"claims\" nvarchar(max) AS JSON\n                ,\"sitelinks\" nvarchar(max) AS JSON\n                ,\"lastrevid\" decimal(28,0)\n        )",
 					"metadata": {
 						"language": "sql"
 					},
@@ -138,7 +138,27 @@
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
 				"content": {
-					"query": "-- Optional: Create MASTER KEY if not exists in database:\n-- CREATE MASTER KEY ENCRYPTION BY PASSWORD = '<Very Strong Password>'\n\nCREATE DATABASE SCOPED CREDENTIAL SynapseIdentity\nWITH IDENTITY = 'Managed Identity';\n\nCREATE EXTERNAL DATA SOURCE wd\nWITH (    LOCATION   = 'https://wikidatastore2021.blob.core.windows.net/wikidataimport',\n          CREDENTIAL = SynapseIdentity\n)",
+					"query": "-- Optional: Create MASTER KEY if not exists in database:\n-- CREATE MASTER KEY ENCRYPTION BY PASSWORD = '<Very Strong Password>'\n\nCREATE DATABASE SCOPED CREDENTIAL SynapseIdentity\nWITH IDENTITY = 'Managed Identity';\n\nCREATE EXTERNAL DATA SOURCE wd\nWITH (    LOCATION   = 'https://wikidatastore2021.blob.core.windows.net/wikidataimport',\n          CREDENTIAL = SynapseIdentity\n)\n\nCREATE EXTERNAL FILE FORMAT parquetsimple\nWITH (  \n    FORMAT_TYPE = PARQUET\n); ",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "wikidata"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/CreateTableWikidataImport')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "CREATE EXTERNAL TABLE [dbo].[WikidataImport] WITH (\n        LOCATION = 'rawimport/',\n        DATA_SOURCE = [wd],\n        FILE_FORMAT = [parquetsimple]\n) AS\nselect *\nfrom openrowset(\n        bulk 'latest-all.json',\n        data_source = 'wd',\n        format = 'csv',\n        fieldterminator ='0x0b',\n        fieldquote = '0x0b'\n    ) with (doc nvarchar(max)) as rows\n     cross apply openjson((CASE WHEN doc='[' OR doc=']' THEN NULL ELSE doc END))\n        with(\n                \"id\" varchar(100)\n                ,\"type\" varchar(50)\n                ,\"datatype\" varchar(100)\n                ,\"labels\" nvarchar(max) AS JSON\n                ,\"descriptions\" nvarchar(max) AS JSON\n                ,\"aliases\" nvarchar(max) AS JSON\n                ,\"claims\" nvarchar(max) AS JSON\n                ,\"sitelinks\" nvarchar(max) AS JSON\n                ,\"lastrevid\" decimal(28,0)\n        )",
 					"metadata": {
 						"language": "sql"
 					},
