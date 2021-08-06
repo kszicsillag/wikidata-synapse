@@ -2,7 +2,7 @@
 	"name": "ExtractStatements",
 	"properties": {
 		"content": {
-			"query": "select top 10 *\nfrom openrowset(\n        bulk 'latest-all.json',\n        data_source = 'wd',\n        format = 'csv',\n        fieldterminator ='0x0b',\n        fieldquote = '0x0b'\n    ) with (doc nvarchar(max)) as rows",
+			"query": "select top 10 *\nfrom openrowset(\n        bulk 'latest-all.json',\n        data_source = 'wd',\n        format = 'csv',\n        fieldterminator ='0x0b',\n        fieldquote = '0x0b'\n    ) with (doc nvarchar(max)) as rows\n     cross apply openjson((CASE WHEN doc='[' OR doc=']' THEN NULL ELSE doc END))\n        with(\"id\" varchar(100), \"type\" varchar(50))\nwhere \"type\"='item'",
 			"metadata": {
 				"language": "sql"
 			},
